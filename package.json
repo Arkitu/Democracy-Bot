@@ -1,0 +1,25 @@
+{
+    "dependencies": {
+        "@discordjs/builders": "^0.12.0",
+        "@discordjs/rest": "^0.3.0",
+        "discord": "^0.8.2",
+        "discord-api-types": "^0.27.2",
+        "discord.js": "^13.6.0",
+        "forever-monitor": "^3.0.3",
+        "node-json-db": "^1.4.1",
+        "uuid": "^8.3.2"
+    },
+    "name": "democracy-bot",
+    "version": "1.0.0",
+    "description": "",
+    "type": "module",
+    "exports": "./bot.js",
+    "scripts": {
+        "start": "node ./bot.js"
+    },
+    "author": "Arkitu",
+    "license": "ISC",
+    "engines": {
+        "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
+    }
+}

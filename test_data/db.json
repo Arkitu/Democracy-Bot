@@ -1,0 +1,11 @@
+{
+    "categories": [
+        {
+            "name": "Classiques",
+            "commands": [
+                "ping",
+                "help"
+            ]
+        }
+    ]
+}
