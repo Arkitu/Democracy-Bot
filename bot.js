@@ -3,7 +3,6 @@ import { readdirSync } from 'fs';
 import { JsonDB } from 'node-json-db';
 import { Config } from 'node-json-db/dist/lib/JsonDBConfig.js';
 import { createHash } from 'crypto';
-import { Token } from './libs/Token.js';
 
 // Import config and db
 const config = new JsonDB(new Config("config", true, true, '/'));

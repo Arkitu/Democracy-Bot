@@ -6,6 +6,7 @@ import { Config } from 'node-json-db/dist/lib/JsonDBConfig.js';
 
 const config = new JsonDB(new Config("config", true, true, '/'));
 const db = new JsonDB(new Config("db", true, true, '/'));
+const test_db = new JsonDB(new Config("./test_data/db.json", true, true, '/'));
 
 const path = {
     admin: "./commands/admin",
@@ -53,6 +54,7 @@ const commandFiles = {
     }
 
     db.push("/commands", cmds.admin.concat(cmds.everyone));
+    test_db.push("/commands", cmds.admin.concat(cmds.everyone));
 
     console.log("Finished refreshing application (/) commands.");
 })();

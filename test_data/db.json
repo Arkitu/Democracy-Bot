@@ -7,5 +7,61 @@
                 "help"
             ]
         }
+    ],
+    "commands": [
+        {
+            "name": "hash",
+            "description": "Renvoie le hash de la chaine de caractères passée en paramètre",
+            "options": [
+                {
+                    "type": 3,
+                    "name": "string",
+                    "description": "La chaine de caractères à hasher",
+                    "required": true
+                }
+            ],
+            "perms": "admin"
+        },
+        {
+            "name": "new_id",
+            "description": "Génère un nouvel identifiant",
+            "options": [],
+            "perms": "admin"
+        },
+        {
+            "name": "timestamp",
+            "description": "Affiche le timestamp actuel",
+            "options": [],
+            "perms": "admin"
+        },
+        {
+            "name": "help",
+            "description": "Renvoie la liste des commandes",
+            "options": [
+                {
+                    "choices": [
+                        {
+                            "name": "Classiques",
+                            "value": "Classiques"
+                        },
+                        {
+                            "name": "Trading",
+                            "value": "Trading"
+                        }
+                    ],
+                    "type": 3,
+                    "name": "categorie",
+                    "description": "La categorie sur laquelle vous voulez des précisions",
+                    "required": false
+                }
+            ],
+            "perms": "everyone"
+        },
+        {
+            "name": "ping",
+            "description": "Répond pong",
+            "options": [],
+            "perms": "everyone"
+        }
     ]
 }

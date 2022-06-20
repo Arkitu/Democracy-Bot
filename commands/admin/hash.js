@@ -14,6 +14,6 @@ export async function execute(interaction, config, db) {
     await interaction.deferReply();
     const opt_string = interaction.options.getString("string");
 
-    var hash = hash(opt_string);
-    await interaction.editReply(hash);
+    var hashed = hash(opt_string);
+    await interaction.editReply(hashed);
 }

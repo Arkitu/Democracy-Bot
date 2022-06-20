@@ -1,6 +1,5 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { MessageEmbed } from "discord.js";
-import { get_main_color } from "../../bot.js";
 
 export const data = new SlashCommandBuilder()
     .setName("help")
@@ -19,7 +18,7 @@ export async function execute(interaction, config, db) {
     const opt_categorie = interaction.options.getString("categorie");
 
     let help_embed = new MessageEmbed()
-        .setColor(await get_main_color())
+        .setColor(config.getData("/main_color"))
         .setThumbnail(interaction.client.user.avatarURL())
     
     if (opt_categorie) {
