@@ -1,4 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
+import { CommandInteraction } from 'discord.js';
+import { Vote } from '../../libs/Vote.js';
 
 export const data = new SlashCommandBuilder()
     .setName('create_vote')
@@ -39,12 +41,53 @@ export const data = new SlashCommandBuilder()
                     )
                     .addIntegerOption(option =>
                         option
-                            .setName('permission')
+                            .setName('permissions')
                             .setDescription('Permissions du salon (par defaut "0")')
-                            
-
-
+                    )
+            )
     )
-export async function execute(interaction, config, db) {
-    await interaction.reply(':ping_pong: Pong !');
+export async function execute(interaction = new CommandInteraction(), config, db) {
+    await interaction.deferReply();
+
+    let opts = {
+        subcommandgroup: await interaction.options.getSubcommandGroup(),
+        subcommand: await interaction.options.getSubcommand(),
+        name: await interaction.options.getString("name"),
+        description: await interaction.options.getString("description") || "",
+        type: await interaction.options.getString("type") || "text",
+        parent: await interaction.options.getString("parent"),
+        permissions: await interaction.options.getInteger("permissions") || 0
+    }
+
+    if (!interaction.guild) {
+        await interaction.editReply(":warning: Vous ne pouvez pas créer de vote en messages privés");
+        return;
+    }
+    if (opts.name.lenght >= 100) {
+        await interaction.editReply(":warning: Vous ne pouvez pas avoir un nom de plus de 100 caractères");
+        return;
+    }
+    if (opts.description.lenght >= 1024) {
+        await interaction.editReply(":warning: Vous ne pouvez pas avoir une description de plus de 1024 caractères");
+        return;
+    }
+    if (opts.parent) {
+        console.debug(opts.parent);
+        let parent = await interaction.client.channels.fetch(opts.parent);
+        console.debug(parent)
+        console.debug(!parent, parent, parent.type != "GUILD_CATEGORY", (!parent) || (parent && parent.type != "GUILD_CATEGORY"))
+        if ((!parent) || (parent && parent.type != "GUILD_CATEGORY")) {
+            await interaction.editReply(":warning: L'id de la catégorie parente n'est pas valide");
+            return;
+        }
+    }
+
+    switch (`${opts.subcommandgroup}/${opts.subcommand}`) {
+        case "channel/create": {
+            let vote = new Vote(interaction.client, db, config, interaction.user, interaction.guild, {name:"channel_create", data:{name: opts.name, description: opts.description, type: opts.type, parent: opts.parent, permissions: opts.permissions}}, "vote_role")
+            await vote.init();
+            await vote.update(interaction);
+            await vote.save();
+        }
+    }
 }
