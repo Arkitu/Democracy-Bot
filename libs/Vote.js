@@ -150,6 +150,7 @@ export class Vote {
                     break;
             }
         }
+        await this.db.delete(`/votes/${this.id}`);
         await log (`Vote ${this.id} ended`);
         return this;
     }
