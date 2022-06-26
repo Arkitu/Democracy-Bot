@@ -35,6 +35,67 @@
             "perms": "admin"
         },
         {
+            "name": "create_vote",
+            "description": "Crée un vote",
+            "options": [
+                {
+                    "type": 2,
+                    "name": "channel",
+                    "description": "Actions sur les salons",
+                    "options": [
+                        {
+                            "type": 1,
+                            "name": "create",
+                            "description": "Créer un salon",
+                            "options": [
+                                {
+                                    "type": 3,
+                                    "name": "name",
+                                    "description": "Nom du salon",
+                                    "required": true
+                                },
+                                {
+                                    "type": 3,
+                                    "name": "description",
+                                    "description": "Description du salon",
+                                    "required": false
+                                },
+                                {
+                                    "choices": [
+                                        {
+                                            "name": "text",
+                                            "value": "text"
+                                        },
+                                        {
+                                            "name": "voice",
+                                            "value": "voice"
+                                        }
+                                    ],
+                                    "type": 3,
+                                    "name": "type",
+                                    "description": "Type du salon (par defaut \"text\")",
+                                    "required": false
+                                },
+                                {
+                                    "type": 3,
+                                    "name": "parent",
+                                    "description": "ID de la catégorie parente",
+                                    "required": false
+                                },
+                                {
+                                    "type": 4,
+                                    "name": "permissions",
+                                    "description": "Permissions du salon (par defaut \"0\")",
+                                    "required": false
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "perms": "everyone"
+        },
+        {
             "name": "help",
             "description": "Renvoie la liste des commandes",
             "options": [

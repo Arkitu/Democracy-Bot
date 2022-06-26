@@ -3,6 +3,7 @@ import { readdirSync } from 'fs';
 import { JsonDB } from 'node-json-db';
 import { Config } from 'node-json-db/dist/lib/JsonDBConfig.js';
 import { createHash } from 'crypto';
+import { Vote } from './libs/Vote.js';
 
 // Import config and db
 const config = new JsonDB(new Config("config", true, true, '/'));
@@ -48,9 +49,16 @@ const client = new Client({ intents: [
     Intents.FLAGS.GUILD_MESSAGES
 ] });
 
+client.setMaxListeners(Infinity);
+
 // When the client is ready, run this code (only once)
 client.once('ready', async () => {
     await log('Bot logged !');
+    // Restart votes
+    for (let vote_id in await db.getData("/votes")) {
+        let vote = db.getData(`/votes/${vote_id}`);
+        await new Vote(client, db, config, await client.users.fetch(vote.author_id), undefined, vote.subject, vote.participants, await (await client.channels.fetch(vote.msg.channel_id)).messages.fetch(vote.msg.msg_id), new Date(vote.start_time), new Date(vote.end_time), vote.id).init();
+    }
 });
 
 // Set listeners
