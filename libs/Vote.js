@@ -43,6 +43,12 @@ export class Vote {
                     this.text.b += "\`"
                 }
                 break;
+            case "other":
+                this.text.b += ": `" + this.subject.data.proposition;
+                if (this.text.b.length > 4096) {
+                    this.text.b = this.text.b.slice(0, 4090) + "…";
+                }
+                this.text.b += "`";
         }
         this.server = await new Server(this.client, this.db, this.config, this.guild).init();
         await this.listen();
@@ -138,11 +144,13 @@ export class Vote {
         await this.msg.edit({ embeds: [this.embed] });
         if (this.result) {
             switch (this.subject.name) {
+                case "other":
                 default:
                     await this.msg.reply(`${this.server.admin_role.role} Veuillez appliquer la mesure votée à la majorité`);
                     break;
             }
         }
+        await this.db.delete(`/votes/${this.id}`);
         await log (`Vote ${this.id} ended`);
         return this;
     }

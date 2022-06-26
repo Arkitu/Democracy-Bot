@@ -39,11 +39,17 @@ export const data = new SlashCommandBuilder()
                             .setDescription('ID de la catégorie parente')
                             .setRequired(false)
                     )
-                    .addIntegerOption(option =>
-                        option
-                            .setName('permissions')
-                            .setDescription('Permissions du salon (par defaut "0")')
-                    )
+            )
+    )
+    .addSubcommand(subcommand =>
+        subcommand
+            .setName('other')
+            .setDescription('Pour les autres votes')
+            .addStringOption(opt => 
+                opt
+                    .setName("proposition")
+                    .setDescription("La proposiotion soumise au vote")
+                    .setRequired(true)
             )
     )
 export async function execute(interaction = new CommandInteraction(), config, db) {
@@ -56,7 +62,7 @@ export async function execute(interaction = new CommandInteraction(), config, db
         description: await interaction.options.getString("description") || "",
         type: await interaction.options.getString("type") || "text",
         parent: await interaction.options.getString("parent"),
-        permissions: await interaction.options.getInteger("permissions") || 0
+        proposition: await interaction.options.getString("proposition")
     }
 
     if (!interaction.guild) {
@@ -71,6 +77,10 @@ export async function execute(interaction = new CommandInteraction(), config, db
         await interaction.editReply(":warning: Vous ne pouvez pas avoir une description de plus de 1024 caractères");
         return;
     }
+    if (opts.proposition.lenght >= 1024) {
+        await interaction.editReply(":warning: Vous ne pouvez pas avoir une proposition de plus de 1024 caractères");
+        return;
+    }
     if (opts.parent) {
         console.debug(opts.parent);
         let parent = await interaction.client.channels.fetch(opts.parent);
@@ -82,12 +92,23 @@ export async function execute(interaction = new CommandInteraction(), config, db
         }
     }
 
-    switch (`${opts.subcommandgroup}/${opts.subcommand}`) {
-        case "channel/create": {
-            let vote = new Vote(interaction.client, db, config, interaction.user, interaction.guild, {name:"channel_create", data:{name: opts.name, description: opts.description, type: opts.type, parent: opts.parent, permissions: opts.permissions}}, "vote_role")
+    switch (opts.subcommandgroup) {
+        case "channel": 
+            switch (opts.subcommand) {
+                case "create": {
+                    let vote = new Vote(interaction.client, db, config, interaction.user, interaction.guild, {name:"channel_create", data:{name: opts.name, description: opts.description, type: opts.type, parent: opts.parent, permissions: opts.permissions}}, "vote_role")
+                    await vote.init();
+                    await vote.update(interaction);
+                    await vote.save();
+                    break;
+                }
+            }
+            break;
+        case "other":
+            let vote = new Vote(interaction.client, db, config, interaction.user, interaction.guild, {name: "other", data: {proposition: opts.proposition}}, "vote_role")
             await vote.init();
             await vote.update(interaction);
             await vote.save();
-        }
+            break;
     }
 }
