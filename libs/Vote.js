@@ -52,6 +52,7 @@ export class Vote {
         }
         this.server = await new Server(this.client, this.db, this.config, this.guild).init();
         await this.listen();
+        await log(`Vote ${this.id} started`);
         return this;
     }
 
@@ -99,7 +100,7 @@ export class Vote {
             ||
             Object.values(this.votes).filter(v=>!v).length > this.participants_users_id.length/2
         ) {
-            await this.end(true);
+            await this.end();
             return this;
         }
         let coeficient_true = Object.values(this.votes).filter(v=>v).length / Object.values(this.votes).length;
@@ -123,13 +124,13 @@ export class Vote {
                     .setEmoji("⛔")
                     .setStyle("DANGER")
             ]);
-        await interaction.editReply({ embeds: [this.embed], components: [this.components] });
+        await interaction.editReply({ content: `${this.server.vote_role}`, embeds: [this.embed], components: [this.components] });
         this.msg = await interaction.fetchReply();
         await this.save();
         return this;
     }
 
-    async end(sooner=false) {
+    async end() {
         this.result = Object.values(this.votes).filter(v=>v) > Object.values(this.votes).filter(v=>!v);
         let coeficient_true = Object.values(this.votes).filter(v=>v).length / Object.values(this.votes).length;
         if (Object.values(this.votes).length == 0) coeficient_true = 1;
@@ -146,7 +147,12 @@ export class Vote {
             switch (this.subject.name) {
                 case "other":
                 default:
-                    await this.msg.reply(`${this.server.admin_role.role} Veuillez appliquer la mesure votée à la majorité`);
+                    await this.msg.reply({ content: `${this.server.admin_role.role} ${this.server.vote_role}`, embeds: [
+                        new MessageEmbed()
+                            .setColor(this.config.getData("/main_color"))
+                            .setTitle("Vote terminé")
+                            .setDescription("Veuillez appliquer la mesure décidée à la majorité")
+                    ] });
                     break;
             }
         }
