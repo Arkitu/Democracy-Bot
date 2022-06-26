@@ -1,6 +1,7 @@
 import { MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
 import { Server } from './Server.js';
 import { v4 as uuidv4 } from 'uuid';
+import { log } from '../bot.js';
 
 var NBR_SCARE_LOADING = 10;
 
@@ -79,6 +80,7 @@ export class Vote {
         }
         this.client.on("interactionCreate", listener);
         setTimeout(async ()=>{
+            if (this.hasOwnProperty("result")) return;
             this.client.removeListener('interactionCreate', listener);
             await this.end();
         }, this.end_time.getTime() - Date.now());
@@ -98,6 +100,7 @@ export class Vote {
         if (Object.values(this.votes).length == 0) coeficient_true = 1;
         let nbr_green_scare = Math.round(coeficient_true*NBR_SCARE_LOADING);
         this.embed = new MessageEmbed()
+            .setColor(this.config.getData("/main_color"))
             .setTitle(`⚖️ Vote ${this.text.a}`)
             .setDescription(`${this.author.username} propose de ${this.text.b}`)
             .addField(`${"🟩".repeat(nbr_green_scare)}${"🟥".repeat(NBR_SCARE_LOADING-nbr_green_scare)}`, `${Object.values(this.votes).filter(v=>v).length} (${Math.round(coeficient_true*100)}%) | ${Object.values(this.votes).filter(v=>!v).length} (${Math.round(100-(coeficient_true*100))}%)`);
@@ -121,6 +124,26 @@ export class Vote {
     }
 
     async end(sooner=false) {
+        this.result = Object.values(this.votes).filter(v=>v) > Object.values(this.votes).filter(v=>!v);
+        let coeficient_true = Object.values(this.votes).filter(v=>v).length / Object.values(this.votes).length;
+        if (Object.values(this.votes).length == 0) coeficient_true = 1;
+        let nbr_green_scare = Math.round(coeficient_true*NBR_SCARE_LOADING);
+        this.embed = new MessageEmbed()
+            .setColor(["#f04747", "#43b581"][+this.result])
+            .setTitle(`⚖️ Vote ${this.text.a}`)
+            .setDescription(`${this.author.username} propose de ${this.text.b}`)
+            .addField(`${"🟩".repeat(nbr_green_scare)}${"🟥".repeat(NBR_SCARE_LOADING-nbr_green_scare)}`, `${Object.values(this.votes).filter(v=>v).length} (${Math.round(coeficient_true*100)}%) | ${Object.values(this.votes).filter(v=>!v).length} (${Math.round(100-(coeficient_true*100))}%)`)
+            .addField("Le vote est terminé !", `Le résultat est **${["négatif", "positif"][+this.result]}** !`);
+        await this.msg.edit({ components: [] });
+        await this.msg.edit({ embeds: [this.embed] });
+        if (this.result) {
+            switch (this.subject.name) {
+                default:
+                    await this.msg.reply(`${this.server.admin_role.role} Veuillez appliquer la mesure votée à la majorité`);
+                    break;
+            }
+        }
+        await log (`Vote ${this.id} ended`);
         return this;
     }
 
