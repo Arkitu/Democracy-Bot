@@ -56,7 +56,7 @@ export async function execute(interaction = new CommandInteraction(), config, db
     await interaction.deferReply();
 
     let opts = {
-        subcommandgroup: await interaction.options.getSubcommandGroup(),
+        subcommandgroup: await interaction.options.getSubcommandGroup(false) || "other",
         subcommand: await interaction.options.getSubcommand(),
         name: await interaction.options.getString("name"),
         description: await interaction.options.getString("description") || "",
@@ -69,33 +69,26 @@ export async function execute(interaction = new CommandInteraction(), config, db
         await interaction.editReply(":warning: Vous ne pouvez pas créer de vote en messages privés");
         return;
     }
-    if (opts.name.lenght >= 100) {
-        await interaction.editReply(":warning: Vous ne pouvez pas avoir un nom de plus de 100 caractères");
-        return;
-    }
-    if (opts.description.lenght >= 1024) {
-        await interaction.editReply(":warning: Vous ne pouvez pas avoir une description de plus de 1024 caractères");
-        return;
-    }
-    if (opts.proposition.lenght >= 1024) {
-        await interaction.editReply(":warning: Vous ne pouvez pas avoir une proposition de plus de 1024 caractères");
-        return;
-    }
-    if (opts.parent) {
-        console.debug(opts.parent);
-        let parent = await interaction.client.channels.fetch(opts.parent);
-        console.debug(parent)
-        console.debug(!parent, parent, parent.type != "GUILD_CATEGORY", (!parent) || (parent && parent.type != "GUILD_CATEGORY"))
-        if ((!parent) || (parent && parent.type != "GUILD_CATEGORY")) {
-            await interaction.editReply(":warning: L'id de la catégorie parente n'est pas valide");
-            return;
-        }
-    }
 
     switch (opts.subcommandgroup) {
-        case "channel": 
+        case "channel": {
             switch (opts.subcommand) {
                 case "create": {
+                    if (opts.name.lenght >= 100) {
+                        await interaction.editReply(":warning: Vous ne pouvez pas avoir un nom de plus de 100 caractères");
+                        return;
+                    }
+                    if (opts.description.lenght >= 1024) {
+                        await interaction.editReply(":warning: Vous ne pouvez pas avoir une description de plus de 1024 caractères");
+                        return;
+                    }
+                    if (opts.parent) {
+                        let parent = await interaction.client.channels.fetch(opts.parent);
+                        if ((!parent) || (parent && parent.type != "GUILD_CATEGORY")) {
+                            await interaction.editReply(":warning: L'id de la catégorie parente n'est pas valide");
+                            return;
+                        }
+                    }
                     let vote = new Vote(interaction.client, db, config, interaction.user, interaction.guild, {name:"channel_create", data:{name: opts.name, description: opts.description, type: opts.type, parent: opts.parent, permissions: opts.permissions}}, "vote_role")
                     await vote.init();
                     await vote.update(interaction);
@@ -104,11 +97,17 @@ export async function execute(interaction = new CommandInteraction(), config, db
                 }
             }
             break;
-        case "other":
+        }
+        case "other": {
+            if (opts.proposition.lenght >= 1024) {
+                await interaction.editReply(":warning: Vous ne pouvez pas avoir une proposition de plus de 1024 caractères");
+                return;
+            }
             let vote = new Vote(interaction.client, db, config, interaction.user, interaction.guild, {name: "other", data: {proposition: opts.proposition}}, "vote_role")
             await vote.init();
             await vote.update(interaction);
             await vote.save();
             break;
+        }
     }
 }

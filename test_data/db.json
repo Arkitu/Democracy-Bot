@@ -81,14 +81,21 @@
                                     "name": "parent",
                                     "description": "ID de la catégorie parente",
                                     "required": false
-                                },
-                                {
-                                    "type": 4,
-                                    "name": "permissions",
-                                    "description": "Permissions du salon (par defaut \"0\")",
-                                    "required": false
                                 }
                             ]
+                        }
+                    ]
+                },
+                {
+                    "type": 1,
+                    "name": "other",
+                    "description": "Pour les autres votes",
+                    "options": [
+                        {
+                            "type": 3,
+                            "name": "proposition",
+                            "description": "La proposiotion soumise au vote",
+                            "required": true
                         }
                     ]
                 }

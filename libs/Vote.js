@@ -3,7 +3,7 @@ import { Server } from './Server.js';
 import { v4 as uuidv4 } from 'uuid';
 import { log } from '../bot.js';
 
-var NBR_SCARE_LOADING = 10;
+var NBR_SQUARE_TO_LOAD = 10;
 
 export class Vote {
     constructor(/*Interaction*/client, /*JsonDB*/db, /*JsonDB*/config, /*User*/author, /*Guild*/guild, /*Object*/subject={name:"", data:{}}, participants="vote_role", /*Message*/msg, /*Date*/start_time=new Date(), /*Date*/end_time=new Date(start_time.getTime()+1000*60*60*24*2), /*string*/id=uuidv4()) {
@@ -23,6 +23,8 @@ export class Vote {
     }
 
     async init() {
+        this.server = new Server(this.client, this.db, this.config, this.guild);
+        await this.server.init();
         this.text = {
             a: "",
             b: ""
@@ -50,7 +52,6 @@ export class Vote {
                 }
                 this.text.b += "`";
         }
-        this.server = await new Server(this.client, this.db, this.config, this.guild).init();
         await this.listen();
         await log(`Vote ${this.id} started`);
         return this;
@@ -77,7 +78,7 @@ export class Vote {
         let listener = async button_interact => {
             if (!button_interact.isButton()) return;
             if (button_interact.message.id != (await this.msg).id) return;
-            if (!this.participants_users_id.includes(button_interact.user.id)) {
+            if (!this.participants_users.map(u=>u.id).includes(button_interact.user.id)) {
                 await button_interact.reply({ content: ":warning: Désolé, vous n'avez pas l'autorisation de participer à ce vote", ephemeral: true });
                 return;
             }
@@ -95,22 +96,14 @@ export class Vote {
     }
 
     async update(interaction) {
-        if (
-            Object.values(this.votes).filter(v=>v).length > this.participants_users_id.length/2
-            ||
-            Object.values(this.votes).filter(v=>!v).length > this.participants_users_id.length/2
-        ) {
-            await this.end();
-            return this;
-        }
         let coeficient_true = Object.values(this.votes).filter(v=>v).length / Object.values(this.votes).length;
         if (Object.values(this.votes).length == 0) coeficient_true = 1;
-        let nbr_green_scare = Math.round(coeficient_true*NBR_SCARE_LOADING);
+        let nbr_green_square = Math.round(coeficient_true*NBR_SQUARE_TO_LOAD);
         this.embed = new MessageEmbed()
             .setColor(this.config.getData("/main_color"))
             .setTitle(`⚖️ Vote ${this.text.a}`)
             .setDescription(`${this.author.username} propose de ${this.text.b}`)
-            .addField(`${"🟩".repeat(nbr_green_scare)}${"🟥".repeat(NBR_SCARE_LOADING-nbr_green_scare)}`, `${Object.values(this.votes).filter(v=>v).length} (${Math.round(coeficient_true*100)}%) | ${Object.values(this.votes).filter(v=>!v).length} (${Math.round(100-(coeficient_true*100))}%)`);
+            .addField(`${"🟩".repeat(nbr_green_square)}${"🟥".repeat(NBR_SQUARE_TO_LOAD-nbr_green_square)}`, `${Object.values(this.votes).filter(v=>v).length} (${Math.round(coeficient_true*100)}%) | ${Object.values(this.votes).filter(v=>!v).length} (${Math.round(100-(coeficient_true*100))}%)`);
         this.components = new MessageActionRow()
             .addComponents([
                 new MessageButton()
@@ -124,9 +117,18 @@ export class Vote {
                     .setEmoji("⛔")
                     .setStyle("DANGER")
             ]);
-        await interaction.editReply({ content: `${this.server.vote_role}`, embeds: [this.embed], components: [this.components] });
+        await interaction.editReply({ content: `${this.server.vote_role.discord}`, embeds: [this.embed], components: [this.components] });
         this.msg = await interaction.fetchReply();
         await this.save();
+        console.debug(Object.values(this.votes).filter(v=>v).length, Object.values(this.votes).filter(v=>!v).length, this.participants_users.length/2)
+        if (
+            Object.values(this.votes).filter(v=>v).length > this.participants_users.length/2
+            ||
+            Object.values(this.votes).filter(v=>!v).length > this.participants_users.length/2
+        ) {
+            await this.end();
+            return this;
+        }
         return this;
     }
 
@@ -134,12 +136,12 @@ export class Vote {
         this.result = Object.values(this.votes).filter(v=>v) > Object.values(this.votes).filter(v=>!v);
         let coeficient_true = Object.values(this.votes).filter(v=>v).length / Object.values(this.votes).length;
         if (Object.values(this.votes).length == 0) coeficient_true = 1;
-        let nbr_green_scare = Math.round(coeficient_true*NBR_SCARE_LOADING);
+        let nbr_green_square = Math.round(coeficient_true*NBR_SQUARE_TO_LOAD);
         this.embed = new MessageEmbed()
             .setColor(["#f04747", "#43b581"][+this.result])
             .setTitle(`⚖️ Vote ${this.text.a}`)
             .setDescription(`${this.author.username} propose de ${this.text.b}`)
-            .addField(`${"🟩".repeat(nbr_green_scare)}${"🟥".repeat(NBR_SCARE_LOADING-nbr_green_scare)}`, `${Object.values(this.votes).filter(v=>v).length} (${Math.round(coeficient_true*100)}%) | ${Object.values(this.votes).filter(v=>!v).length} (${Math.round(100-(coeficient_true*100))}%)`)
+            .addField(`${"🟩".repeat(nbr_green_square)}${"🟥".repeat(NBR_SQUARE_TO_LOAD-nbr_green_square)}`, `${Object.values(this.votes).filter(v=>v).length} (${Math.round(coeficient_true*100)}%) | ${Object.values(this.votes).filter(v=>!v).length} (${Math.round(100-(coeficient_true*100))}%)`)
             .addField("Le vote est terminé !", `Le résultat est **${["négatif", "positif"][+this.result]}** !`);
         await this.msg.edit({ components: [] });
         await this.msg.edit({ embeds: [this.embed] });
@@ -147,7 +149,7 @@ export class Vote {
             switch (this.subject.name) {
                 case "other":
                 default:
-                    await this.msg.reply({ content: `${this.server.admin_role.role} ${this.server.vote_role}`, embeds: [
+                    await this.msg.reply({ content: `${this.server.admin_role.discord} ${this.server.vote_role.discord}`, embeds: [
                         new MessageEmbed()
                             .setColor(this.config.getData("/main_color"))
                             .setTitle("Vote terminé")
@@ -162,14 +164,8 @@ export class Vote {
     }
 
     get participants_users() {
-        if (this.participants == "vote_role") return this.server.vote_role.members.filter(u=>!u.bot);
-        if (this.participants == "everyone") return this.server.members.filter(u=>!u.bot);
+        if (this.participants == "vote_role") return this.guild.members.fetch().filter(m => m.roles.find("id", this.server.vote_role.id)).filter(u=>!u.bot);
+        if (this.participants == "everyone") return this.guild.members.filter(u=>!u.bot);
         if (typeof this.participants == "array") return this.participants.map(async p=>await this.client.users.fetch(p));
-    }
-
-    get participants_users_id() {
-        if (this.participants == "vote_role") return this.server.vote_role.members.filter(u=>!u.bot).map(u=>u.id);
-        if (this.participants == "everyone") return this.server.members.filter(u=>!u.bot).map(u=>u.id);
-        if (typeof this.participants == "array") return this.participants;
     }
 }
