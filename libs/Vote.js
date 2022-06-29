@@ -78,7 +78,7 @@ export class Vote {
         let listener = async button_interact => {
             if (!button_interact.isButton()) return;
             if (button_interact.message.id != (await this.msg).id) return;
-            if (!this.participants_users.map(u=>u.id).includes(button_interact.user.id)) {
+            if (!(await this.participants_users()).map(u=>u.id).includes(button_interact.user.id)) {
                 await button_interact.reply({ content: ":warning: Désolé, vous n'avez pas l'autorisation de participer à ce vote", ephemeral: true });
                 return;
             }
@@ -103,7 +103,8 @@ export class Vote {
             .setColor(this.config.getData("/main_color"))
             .setTitle(`⚖️ Vote ${this.text.a}`)
             .setDescription(`${this.author.username} propose de ${this.text.b}`)
-            .addField(`${"🟩".repeat(nbr_green_square)}${"🟥".repeat(NBR_SQUARE_TO_LOAD-nbr_green_square)}`, `${Object.values(this.votes).filter(v=>v).length} (${Math.round(coeficient_true*100)}%) | ${Object.values(this.votes).filter(v=>!v).length} (${Math.round(100-(coeficient_true*100))}%)`);
+            .addField(`${"🟩".repeat(nbr_green_square)}${"🟥".repeat(NBR_SQUARE_TO_LOAD-nbr_green_square)}`, `${Object.values(this.votes).filter(v=>v).length} (${Math.round(coeficient_true*100)}%) | ${Object.values(this.votes).filter(v=>!v).length} (${Math.round(100-(coeficient_true*100))}%)`)
+            .setFooter({ text: `${Object.keys(this.votes).length}/${(await this.participants_users()).length} votants` });
         this.components = new MessageActionRow()
             .addComponents([
                 new MessageButton()
@@ -120,11 +121,10 @@ export class Vote {
         await interaction.editReply({ content: `${this.server.vote_role.discord}`, embeds: [this.embed], components: [this.components] });
         this.msg = await interaction.fetchReply();
         await this.save();
-        console.debug(Object.values(this.votes).filter(v=>v).length, Object.values(this.votes).filter(v=>!v).length, this.participants_users.length/2)
         if (
-            Object.values(this.votes).filter(v=>v).length > this.participants_users.length/2
+            Object.values(this.votes).filter(v=>v).length > (await this.participants_users()).length/2
             ||
-            Object.values(this.votes).filter(v=>!v).length > this.participants_users.length/2
+            Object.values(this.votes).filter(v=>!v).length > (await this.participants_users()).length/2
         ) {
             await this.end();
             return this;
@@ -142,7 +142,8 @@ export class Vote {
             .setTitle(`⚖️ Vote ${this.text.a}`)
             .setDescription(`${this.author.username} propose de ${this.text.b}`)
             .addField(`${"🟩".repeat(nbr_green_square)}${"🟥".repeat(NBR_SQUARE_TO_LOAD-nbr_green_square)}`, `${Object.values(this.votes).filter(v=>v).length} (${Math.round(coeficient_true*100)}%) | ${Object.values(this.votes).filter(v=>!v).length} (${Math.round(100-(coeficient_true*100))}%)`)
-            .addField("Le vote est terminé !", `Le résultat est **${["négatif", "positif"][+this.result]}** !`);
+            .addField("Le vote est terminé !", `Le résultat est **${["négatif", "positif"][+this.result]}** !`)
+            .setFooter({ text: `${Object.keys(this.votes).length}/${(await this.participants_users()).length} votants` });;
         await this.msg.edit({ components: [] });
         await this.msg.edit({ embeds: [this.embed] });
         if (this.result) {
@@ -163,9 +164,9 @@ export class Vote {
         return this;
     }
 
-    get participants_users() {
-        if (this.participants == "vote_role") return this.guild.members.fetch().filter(m => m.roles.find("id", this.server.vote_role.id)).filter(u=>!u.bot);
-        if (this.participants == "everyone") return this.guild.members.filter(u=>!u.bot);
+    async participants_users() {
+        if (this.participants == "vote_role") return await (await this.server.guild.members.fetch()).filter(m=>!m.user.bot && m.roles.cache.some(r=>r.id == this.server.vote_role.discord.id)).toJSON();
+        if (this.participants == "everyone") return this.guild.members.filter(m=>!m.user.bot);
         if (typeof this.participants == "array") return this.participants.map(async p=>await this.client.users.fetch(p));
     }
 }

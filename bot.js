@@ -46,7 +46,9 @@ export function get_str_amount(amount, token_id, abbr = true, code = false) {
 // Create a new client instance
 const client = new Client({ intents: [
     Intents.FLAGS.GUILDS,
-    Intents.FLAGS.GUILD_MESSAGES
+    Intents.FLAGS.GUILD_MESSAGES,
+    "GUILD_MEMBERS",
+    "GUILD_PRESENCES"
 ] });
 
 client.setMaxListeners(Infinity);
