@@ -13,6 +13,9 @@ export class Vote {
         this.db = db;
         this.config = config;
         this.subject = subject;
+        for (let k in this.subject.data) {
+            if (!k) delete this.subject.data.k
+        }
         this.msg = msg;
         this.guild = guild || msg.guild;
         this.start_time = start_time;
@@ -148,6 +151,23 @@ export class Vote {
         await this.msg.edit({ embeds: [this.embed] });
         if (this.result) {
             switch (this.subject.name) {
+                case "channel_create":
+                    let data = this.subject.data;
+                    let opts = {
+                        type: data.type,
+                        name: data.name,
+                        topic: data.description,
+                        reason: "Ce salon résulte de la volonté commune"
+                    };
+                    if (data.parent) opts.parent = data.parent;
+                    await this.server.guild.channels.create(opts);
+                    await this.msg.reply({ content: `${this.server.vote_role.discord}`, embeds: [
+                        new MessageEmbed()
+                            .setColor(this.config.getData("/main_color"))
+                            .setTitle("Vote terminé")
+                            .setDescription("La mesure décidée à la majorité a été appliquée")
+                    ] });
+                    break;
                 case "other":
                 default:
                     await this.msg.reply({ content: `${this.server.admin_role.discord} ${this.server.vote_role.discord}`, embeds: [

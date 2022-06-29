@@ -89,7 +89,7 @@ export async function execute(interaction = new CommandInteraction(), config, db
                             return;
                         }
                     }
-                    let vote = new Vote(interaction.client, db, config, interaction.user, interaction.guild, {name:"channel_create", data:{name: opts.name, description: opts.description, type: opts.type, parent: opts.parent, permissions: opts.permissions}}, "vote_role")
+                    let vote = new Vote(interaction.client, db, config, interaction.user, interaction.guild, {name:"channel_create", data:{name: opts.name, description: opts.description, type: opts.type, parent: opts.parent}}, "vote_role")
                     await vote.init();
                     await vote.update(interaction);
                     await vote.save();
