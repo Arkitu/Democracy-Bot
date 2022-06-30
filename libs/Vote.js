@@ -37,7 +37,8 @@ export class Vote {
                 this.text.a += `pour la création du salon ${this.subject.data.name}`;
                 this.text.b += `créer le salon \`#${this.subject.data.name}\``
                 if (this.subject.data.parent) {
-                    this.subject.data.parent = await this.client.channels.fetch(this.subject.data.parent);
+                    console.debug(this.subject.data.parent);
+                    this.subject.data.parent.discord = await this.client.channels.fetch(this.subject.data.parent.id);
                     this.text.b += ` dans la catégorie \`${this.subject.data.parent.name}\``;
                 }
                 if (this.subject.data.description) {
@@ -155,12 +156,12 @@ export class Vote {
                     let data = this.subject.data;
                     let opts = {
                         type: data.type,
-                        name: data.name,
-                        topic: data.description,
                         reason: "Ce salon résulte de la volonté commune"
                     };
-                    if (data.parent) opts.parent = data.parent;
-                    await this.server.guild.channels.create(opts);
+                    if (data.description) opts.topic = data.description;
+                    if (data.parent) opts.parent = data.parent.id;
+                    console.debug(opts);
+                    await this.server.guild.channels.create(this.subject.data.name, opts);
                     await this.msg.reply({ content: `${this.server.vote_role.discord}`, embeds: [
                         new MessageEmbed()
                             .setColor(this.config.getData("/main_color"))
