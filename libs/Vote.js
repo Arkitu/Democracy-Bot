@@ -6,7 +6,7 @@ import { log } from '../bot.js';
 var NBR_SQUARE_TO_LOAD = 10;
 
 export class Vote {
-    constructor(/*Interaction*/client, /*JsonDB*/db, /*JsonDB*/config, /*User*/author, /*Guild*/guild, /*Object*/subject={name:"", data:{}}, participants="vote_role", /*Message*/msg, /*Date*/start_time=new Date(), /*Date*/end_time=new Date(start_time.getTime()+1000*60*60*24*2), /*string*/id=uuidv4()) {
+    constructor(/*Interaction*/client, /*JsonDB*/db, /*JsonDB*/config, /*User*/author, /*Guild*/guild, /*Object*/subject={name:"", data:{}}, participants="vote_role", /*Message*/msg, /*Date*/start_time=new Date(), /*Date*/end_time=new Date(start_time.getTime()+1000*60*60*24*2), /*string*/id=uuidv4(), /*object*/votes={}) {
         this.id = id;
         this.client = client;
         this.author = author;
@@ -21,7 +21,7 @@ export class Vote {
         this.start_time = start_time;
         this.end_time = end_time;
         this.participants = participants;
-        this.votes = {};
+        this.votes = votes;
         this.votes[this.author.id] = true;
     }
 

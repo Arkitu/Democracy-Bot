@@ -59,7 +59,7 @@ client.once('ready', async () => {
     // Restart votes
     for (let vote_id in await db.getData("/votes")) {
         let vote = db.getData(`/votes/${vote_id}`);
-        await new Vote(client, db, config, await client.users.fetch(vote.author_id), undefined, vote.subject, vote.participants, await (await client.channels.fetch(vote.msg.channel_id)).messages.fetch(vote.msg.msg_id), new Date(vote.start_time), new Date(vote.end_time), vote.id).init();
+        await new Vote(client, db, config, await client.users.fetch(vote.author_id), undefined, vote.subject, vote.participants, await (await client.channels.fetch(vote.msg.channel_id)).messages.fetch(vote.msg.msg_id), new Date(vote.start_time), new Date(vote.end_time), vote.id, vote.votes).init();
     }
 });
 
