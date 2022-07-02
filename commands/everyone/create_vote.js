@@ -70,6 +70,11 @@ export async function execute(interaction = new CommandInteraction(), config, db
         return;
     }
 
+    if (interaction.guild.id == "816359185901420584" && interaction.channel.id != "816359779026075659") {
+        await interaction.editReply(":warning: Veullez poster les votes dans le salon <#${816359779026075659}>");
+        return;
+    }
+
     switch (opts.subcommandgroup) {
         case "channel": {
             switch (opts.subcommand) {
