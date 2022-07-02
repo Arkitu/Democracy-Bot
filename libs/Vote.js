@@ -13,6 +13,9 @@ export class Vote {
         this.db = db;
         this.config = config;
         this.subject = subject;
+        for (let k in this.subject.data) {
+            if (!k) delete this.subject.data.k
+        }
         this.msg = msg;
         this.guild = guild || msg.guild;
         this.start_time = start_time;
@@ -34,7 +37,8 @@ export class Vote {
                 this.text.a += `pour la création du salon ${this.subject.data.name}`;
                 this.text.b += `créer le salon \`#${this.subject.data.name}\``
                 if (this.subject.data.parent) {
-                    this.subject.data.parent = await this.client.channels.fetch(this.subject.data.parent);
+                    console.debug(this.subject.data.parent);
+                    this.subject.data.parent.discord = await this.client.channels.fetch(this.subject.data.parent.id);
                     this.text.b += ` dans la catégorie \`${this.subject.data.parent.name}\``;
                 }
                 if (this.subject.data.description) {
@@ -104,7 +108,7 @@ export class Vote {
             .setTitle(`⚖️ Vote ${this.text.a}`)
             .setDescription(`${this.author.username} propose de ${this.text.b}`)
             .addField(`${"🟩".repeat(nbr_green_square)}${"🟥".repeat(NBR_SQUARE_TO_LOAD-nbr_green_square)}`, `${Object.values(this.votes).filter(v=>v).length} (${Math.round(coeficient_true*100)}%) | ${Object.values(this.votes).filter(v=>!v).length} (${Math.round(100-(coeficient_true*100))}%)`)
-            .setFooter({ text: `${Object.keys(this.votes).length}/${(await this.participants_users()).length} votants` });
+            .setFooter({ text: `${Object.keys(this.votes).length}/${(await this.participants_users()).length} votants | Fin : ${this.end_time.toLocaleString("fr-FR")}` });
         this.components = new MessageActionRow()
             .addComponents([
                 new MessageButton()
@@ -148,6 +152,25 @@ export class Vote {
         await this.msg.edit({ embeds: [this.embed] });
         if (this.result) {
             switch (this.subject.name) {
+                /*
+                case "channel_create":
+                    let data = this.subject.data;
+                    let opts = {
+                        type: data.type,
+                        reason: "Ce salon résulte de la volonté commune"
+                    };
+                    if (data.description) opts.topic = data.description;
+                    if (data.parent) opts.parent = data.parent.id;
+                    console.debug(opts);
+                    await this.server.guild.channels.create(this.subject.data.name, opts);
+                    await this.msg.reply({ content: `${this.server.vote_role.discord}`, embeds: [
+                        new MessageEmbed()
+                            .setColor(this.config.getData("/main_color"))
+                            .setTitle("Vote terminé")
+                            .setDescription("La mesure décidée à la majorité a été appliquée")
+                    ] });
+                    break;
+                */
                 case "other":
                 default:
                     await this.msg.reply({ content: `${this.server.admin_role.discord} ${this.server.vote_role.discord}`, embeds: [

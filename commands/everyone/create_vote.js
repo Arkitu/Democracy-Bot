@@ -82,14 +82,23 @@ export async function execute(interaction = new CommandInteraction(), config, db
                         await interaction.editReply(":warning: Vous ne pouvez pas avoir une description de plus de 1024 caractères");
                         return;
                     }
+                    let vote_opts = {
+                        name:"channel_create",
+                        data: {
+                            name: opts.name,
+                            description: opts.description,
+                            type: opts.type
+                        }
+                    }
                     if (opts.parent) {
                         let parent = await interaction.client.channels.fetch(opts.parent);
                         if ((!parent) || (parent && parent.type != "GUILD_CATEGORY")) {
                             await interaction.editReply(":warning: L'id de la catégorie parente n'est pas valide");
                             return;
                         }
+                        vote_opts.data.parent = {id: opts.parent.id};
                     }
-                    let vote = new Vote(interaction.client, db, config, interaction.user, interaction.guild, {name:"channel_create", data:{name: opts.name, description: opts.description, type: opts.type, parent: opts.parent, permissions: opts.permissions}}, "vote_role")
+                    let vote = new Vote(interaction.client, db, config, interaction.user, interaction.guild, vote_opts, "vote_role")
                     await vote.init();
                     await vote.update(interaction);
                     await vote.save();
