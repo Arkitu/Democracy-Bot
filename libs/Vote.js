@@ -108,7 +108,7 @@ export class Vote {
             .setTitle(`⚖️ Vote ${this.text.a}`)
             .setDescription(`${this.author.username} propose de ${this.text.b}`)
             .addField(`${"🟩".repeat(nbr_green_square)}${"🟥".repeat(NBR_SQUARE_TO_LOAD-nbr_green_square)}`, `${Object.values(this.votes).filter(v=>v).length} (${Math.round(coeficient_true*100)}%) | ${Object.values(this.votes).filter(v=>!v).length} (${Math.round(100-(coeficient_true*100))}%)`)
-            .setFooter({ text: `${Object.keys(this.votes).length}/${(await this.participants_users()).length} votants` });
+            .setFooter({ text: `${Object.keys(this.votes).length}/${(await this.participants_users()).length} votants | Fin : ${this.end_time.toLocaleString("fr-FR")}` });
         this.components = new MessageActionRow()
             .addComponents([
                 new MessageButton()
@@ -152,6 +152,7 @@ export class Vote {
         await this.msg.edit({ embeds: [this.embed] });
         if (this.result) {
             switch (this.subject.name) {
+                /*
                 case "channel_create":
                     let data = this.subject.data;
                     let opts = {
@@ -169,6 +170,7 @@ export class Vote {
                             .setDescription("La mesure décidée à la majorité a été appliquée")
                     ] });
                     break;
+                */
                 case "other":
                 default:
                     await this.msg.reply({ content: `${this.server.admin_role.discord} ${this.server.vote_role.discord}`, embeds: [
