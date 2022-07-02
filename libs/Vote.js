@@ -137,7 +137,7 @@ export class Vote {
     }
 
     async end() {
-        this.result = Object.values(this.votes).filter(v=>v) > Object.values(this.votes).filter(v=>!v);
+        this.result = Object.values(this.votes).filter(v=>v).length > Object.values(this.votes).filter(v=>!v).length;
         let coeficient_true = Object.values(this.votes).filter(v=>v).length / Object.values(this.votes).length;
         if (Object.values(this.votes).length == 0) coeficient_true = 1;
         let nbr_green_square = Math.round(coeficient_true*NBR_SQUARE_TO_LOAD);
