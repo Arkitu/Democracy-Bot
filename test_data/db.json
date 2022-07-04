@@ -35,6 +35,12 @@
             "perms": "admin"
         },
         {
+            "name": "constitution",
+            "description": "Affiche la constitution du serveur",
+            "options": [],
+            "perms": "everyone"
+        },
+        {
             "name": "create_vote",
             "description": "Crée un vote",
             "options": [

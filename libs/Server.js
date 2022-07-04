@@ -1,5 +1,5 @@
 export class Server {
-    constructor(client, db, config, guild_resolvable, vote_role_id="", admin_role_id="") {
+    constructor(client, db, config, guild_resolvable, vote_role_id="", admin_role_id="", constitution={}, db_config={constitution:false}) {
         this.client = client;
         this.db = db;
         this.config = config;
@@ -11,6 +11,8 @@ export class Server {
         this.vote_role = {
             id: vote_role_id
         };
+        this.constitution = constitution;
+        this.db_config = db_config;
     }
 
     async init() {
@@ -19,6 +21,8 @@ export class Server {
             let in_db = this.db.getData(`/servers/${this.guild.id}`);
             this.admin_role = in_db.admin_role;
             this.vote_role = in_db.vote_role;
+            this.constitution = in_db.constitution;
+            this.db_config = in_db.config;
         }
 
         if (!this.vote_role.id) {
@@ -44,7 +48,9 @@ export class Server {
             },
             vote_role: {
                 id: this.vote_role.discord.id
-            }
+            },
+            constitution: this.constitution,
+            config: this.db_config
         });
         return this;
     }
